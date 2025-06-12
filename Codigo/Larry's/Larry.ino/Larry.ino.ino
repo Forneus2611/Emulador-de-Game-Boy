@@ -33,30 +33,42 @@ static const uint32_t larry_data[1][100] = {{
 
 // Box sprite
 static const uint32_t boxSprite[1][100] = {{
-  0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5,
-  0xff2a50a5, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff2a50a5,
-  0xff2a50a5, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff2a50a5,
-  0xff2a50a5, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff2a50a5,
-  0xff2a50a5, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff2a50a5,
-  0xff2a50a5, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff2a50a5,
-  0xff2a50a5, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff2a50a5,
-  0xff2a50a5, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff1b4ec1, 0xff2a50a5,
-  0xff2a50a5, 0xff000000, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff1b4ec1, 0xff000000, 0xff2a50a5,
-  0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5, 0xff2a50a5
+  0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513,
+  0xff8b4513, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff8b4513,
+  0xff8b4513, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xff8b4513,
+  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff8b4513,
+  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff8b4513,
+  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff8b4513,
+  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff8b4513,
+  0xff8b4513, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xff8b4513,
+  0xff8b4513, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff8b4513,
+  0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513
 }};
 
-// Variables
 const int size = 10;
 const int step = 5;
 const int WALL = 10;
-const int GOAL_X = 100;
-const int GOAL_Y = 30;
+const int wallColumnX = 15;
+
 const int START_PLAYER_X = 30;
 const int START_PLAYER_Y = 30;
+
 const int START_BOX_X = 60;
 const int START_BOX_Y = 30;
+
+const int START_BOX2_X = 60;
+const int START_BOX2_Y = 60;
+
+const int GOAL_X = 100;
+const int GOAL_Y = 30;
+
+const int GOAL2_X = 100;
+const int GOAL2_Y = 60;
+
 int playerX = START_PLAYER_X, playerY = START_PLAYER_Y;
 int boxX = START_BOX_X, boxY = START_BOX_Y;
+int box2X = START_BOX2_X, box2Y = START_BOX2_Y;
+
 bool victory = false;
 
 void setup() {
@@ -83,11 +95,14 @@ void loop() {
   if (digitalRead(BTN_START) == LOW) {
     clearSprite(playerX, playerY);
     clearSprite(boxX, boxY);
+    clearSprite(box2X, box2Y);
     tft.fillScreen(ST77XX_BLACK);
     playerX = START_PLAYER_X;
     playerY = START_PLAYER_Y;
     boxX = START_BOX_X;
     boxY = START_BOX_Y;
+    box2X = START_BOX2_X;
+    box2Y = START_BOX2_Y;
     victory = false;
     drawScene();
     delay(300);
@@ -98,26 +113,35 @@ void loop() {
     int newPlayerX = playerX + dx;
     int newPlayerY = playerY + dy;
 
-    if (isColliding(newPlayerX, newPlayerY, boxX, boxY)) {
-      int newBoxX = boxX + dx;
-      int newBoxY = boxY + dy;
-      if (isInside(newBoxX, newBoxY)) {
-        clearSprite(boxX, boxY);
-        boxX = newBoxX;
-        boxY = newBoxY;
+    if (!isInside(newPlayerX, newPlayerY) || isWall(newPlayerX, newPlayerY)) return;
+
+    bool empujaCaja1 = isColliding(newPlayerX, newPlayerY, boxX, boxY);
+    bool empujaCaja2 = isColliding(newPlayerX, newPlayerY, box2X, box2Y);
+
+    if (empujaCaja1 || empujaCaja2) {
+      int& bX = empujaCaja1 ? boxX : box2X;
+      int& bY = empujaCaja1 ? boxY : box2Y;
+      int newBoxX = bX + dx;
+      int newBoxY = bY + dy;
+      if (isInside(newBoxX, newBoxY) && !isWall(newBoxX, newBoxY) &&
+          !isColliding(newBoxX, newBoxY, empujaCaja1 ? box2X : boxX, empujaCaja1 ? box2Y : boxY)) {
+        clearSprite(bX, bY);
+        bX = newBoxX;
+        bY = newBoxY;
         clearSprite(playerX, playerY);
         playerX = newPlayerX;
         playerY = newPlayerY;
         drawScene();
       }
-    } else if (isInside(newPlayerX, newPlayerY)) {
+    } else {
       clearSprite(playerX, playerY);
       playerX = newPlayerX;
       playerY = newPlayerY;
       drawScene();
     }
 
-    if (boxX == GOAL_X && boxY == GOAL_Y) {
+    if (((boxX == GOAL_X && boxY == GOAL_Y) && (box2X == GOAL2_X && box2Y == GOAL2_Y)) ||
+        ((boxX == GOAL2_X && boxY == GOAL2_Y) && (box2X == GOAL_X && box2Y == GOAL_Y))) {
       tft.setTextColor(ST77XX_WHITE);
       tft.setTextSize(2);
       tft.setCursor(20, 80);
@@ -131,12 +155,20 @@ void loop() {
 
 void drawScene() {
   tft.fillRect(GOAL_X, GOAL_Y, size, size, ST77XX_GREEN);
+  tft.fillRect(GOAL2_X, GOAL2_Y, size, size, ST77XX_GREEN);
+
   tft.fillRect(0, 0, tft.width(), WALL, ST77XX_WHITE);
   tft.fillRect(0, tft.height() - WALL, tft.width(), WALL, ST77XX_WHITE);
   tft.fillRect(0, 0, WALL, tft.height(), ST77XX_WHITE);
   tft.fillRect(tft.width() - WALL, 0, WALL, tft.height(), ST77XX_WHITE);
+
+  for (int y = WALL; y < tft.height() - WALL; y += size) {
+    tft.fillRect(wallColumnX, y, size, size, ST77XX_WHITE);
+  }
+
   drawLarry(playerX, playerY);
   drawBox(boxX, boxY);
+  drawBox(box2X, box2Y);
 }
 
 void drawLarry(int x, int y) {
@@ -174,4 +206,8 @@ bool isInside(int x, int y) {
 bool isColliding(int ax, int ay, int bx, int by) {
   int margin = 4;
   return abs(ax - bx) < size - margin && abs(ay - by) < size - margin;
+}
+
+bool isWall(int x, int y) {
+  return x >= wallColumnX && x < wallColumnX + size;
 }
