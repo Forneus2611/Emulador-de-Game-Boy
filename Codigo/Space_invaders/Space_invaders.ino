@@ -76,7 +76,7 @@ void setup() {
 }
 
 void loop() {
-  if (gameOver) {
+  if (gameOver) { 
     tft.fillScreen(ST77XX_BLACK);
     tft.setCursor(20, SCREEN_HEIGHT / 2);
     tft.setTextColor(ST77XX_RED);
