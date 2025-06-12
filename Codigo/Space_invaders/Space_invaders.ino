@@ -25,7 +25,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 #define SCREEN_HEIGHT 160
 
 // Nave del jugador
-int playerWidth = 14;
+int playerWidth = 8; // Nuevo ancho del sprite
 int playerHeight = 8;
 int playerX = SCREEN_WIDTH / 2 - playerWidth / 2;
 int playerY = SCREEN_HEIGHT - 40;
@@ -38,7 +38,7 @@ int shotY[MAX_SHOTS];
 
 // Enemigos
 const int numEnemies = 6;
-int enemyWidth = 12;
+int enemyWidth = 8;
 int enemyHeight = 8;
 int enemyX[numEnemies];
 int enemyY[numEnemies];
@@ -145,13 +145,13 @@ void initEnemies() {
 }
 
 void drawPlayer() {
-  tft.fillRect(playerX, playerY, playerWidth, playerHeight, ST77XX_WHITE);
+  drawPlayerSprite(playerX, playerY);
 }
 
 void drawShot() {
   for (int i = 0; i < MAX_SHOTS; i++) {
     if (shotActive[i]) {
-      tft.fillRect(shotX[i], shotY[i], 3, 7, ST77XX_RED);
+      tft.fillRect(shotX[i], shotY[i], 2, 6, ST77XX_RED);
     }
   }
 }
@@ -179,7 +179,7 @@ void moveShot() {
 void drawEnemies() {
   for (int i = 0; i < numEnemies; i++) {
     if (enemyAlive[i]) {
-      tft.fillRect(enemyX[i], enemyY[i], enemyWidth, enemyHeight, ST77XX_GREEN);
+      drawEnemySprite(enemyX[i], enemyY[i]);
     }
   }
 }
@@ -289,4 +289,48 @@ void restartGame() {
     shotActive[i] = false;
   }
   gameOver = false;
+}
+
+// SPRITE: NAVE DEL JUGADOR
+void drawPlayerSprite(int x, int y) {
+  uint8_t ship[] = {
+    0b00011100,
+    0b00111110,
+    0b01111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b01111110,
+    0b00111100
+  };
+
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      if (ship[i] & (1 << (7 - j))) {
+        tft.drawPixel(x + j, y + i, ST77XX_WHITE);
+      }
+    }
+  }
+}
+
+// SPRITE: ALIEN ENEMIGO
+void drawEnemySprite(int x, int y) {
+  uint8_t alien[] = {
+    0b00111100,
+    0b01111110,
+    0b11111111,
+    0b11011011,
+    0b11111111,
+    0b00100100,
+    0b01011010,
+    0b10100101
+  };
+
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      if (alien[i] & (1 << (7 - j))) {
+        tft.drawPixel(x + j, y + i, ST77XX_GREEN);
+      }
+    }
+  }
 }
