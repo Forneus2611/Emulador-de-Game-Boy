@@ -21,16 +21,16 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 
 // ---------- Sprite Larry (10x10 ARGB32) ----------
 static const uint32_t larry_data[1][100] = {{
-  0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff000000, 
-  0xff000000, 0xff00ffff, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff00ffff, 0xff000000, 
-  0xff000000, 0xffffffff, 0xff00ffff, 0xff00ffff, 0xff000000, 0xff000000, 0xffffffff, 0xff00ffff, 0xff00ffff, 0xff000000, 
-  0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 
-  0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 
-  0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
-  0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
-  0xff000000, 0xff00ffff, 0xff00ffff, 0xff000000, 0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
-  0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
-  0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff
+  0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xff000000, 
+  0xff000000, 0xffffff00, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xffffff00, 0xff000000, 
+  0xff000000, 0xffffffff, 0xffffff00, 0xffffff00, 0xff000000, 0xff000000, 0xffffffff, 0xffffff00, 0xffffff00, 0xff000000, 
+  0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 
+  0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 
+  0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 
+  0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 
+  0xff000000, 0xffffff00, 0xffffff00, 0xff000000, 0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 
+  0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 
+  0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00
 }};
 
 // ---------- Posiciones iniciales ----------
@@ -38,6 +38,8 @@ const int START_PLAYER_X = 30;
 const int START_PLAYER_Y = 30;
 const int START_BOX_X = 60;
 const int START_BOX_Y = 30;
+const int GOAL_X = 100;
+const int GOAL_Y = 30;
 
 // ---------- Variables de posición ----------
 int playerX = START_PLAYER_X;
@@ -46,9 +48,9 @@ int boxX = START_BOX_X;
 int boxY = START_BOX_Y;
 
 const int size = 10;
-const int step = 10;
+const int step = 5;
+bool victory = false;
 
-// ---------- Setup ----------
 void setup() {
   mySPI.begin(TFT_SCLK, -1, TFT_MOSI);
   tft.initR(INITR_BLACKTAB);
@@ -64,8 +66,9 @@ void setup() {
   drawScene();
 }
 
-// ---------- Loop ----------
 void loop() {
+  if (victory) return;
+
   bool moved = false;
   int dx = 0, dy = 0;
 
@@ -77,10 +80,12 @@ void loop() {
   if (digitalRead(BTN_START) == LOW) {
     clearSprite(playerX, playerY);
     clearSquare(boxX, boxY);
+    tft.fillScreen(ST77XX_BLACK);
     playerX = START_PLAYER_X;
     playerY = START_PLAYER_Y;
     boxX = START_BOX_X;
     boxY = START_BOX_Y;
+    victory = false;
     drawScene();
     delay(300);
     return;
@@ -102,20 +107,34 @@ void loop() {
         clearSprite(playerX, playerY);
         playerX = newPlayerX;
         playerY = newPlayerY;
+        drawScene();
       }
+
     } else if (isInside(newPlayerX, newPlayerY)) {
       clearSprite(playerX, playerY);
       playerX = newPlayerX;
       playerY = newPlayerY;
+      drawScene();
     }
 
-    drawScene();
+    if (boxX == GOAL_X && boxY == GOAL_Y) {
+      tft.setTextColor(ST77XX_WHITE);
+      tft.setTextSize(2);
+      tft.setCursor(20, 80);
+      tft.println("VICTORIA!");
+      victory = true;
+    }
+
     delay(100);
   }
 }
 
 // ---------- Funciones auxiliares ----------
 void drawScene() {
+  // Dibuja la meta primero
+  tft.fillRect(GOAL_X, GOAL_Y, size, size, ST77XX_GREEN);
+
+  // Dibuja jugador y caja
   drawLarry(playerX, playerY);
   tft.fillRect(boxX, boxY, size, size, ST77XX_BLUE);
 }
@@ -124,7 +143,7 @@ void drawLarry(int x, int y) {
   for (int row = 0; row < 10; row++) {
     for (int col = 0; col < 10; col++) {
       uint32_t color32 = larry_data[0][row * 10 + col];
-      if ((color32 & 0xFFFFFF) != 0x000000) {  // ignorar negro como transparente
+      if ((color32 & 0xFFFFFF) != 0x000000) {
         uint8_t r = (color32 >> 16) & 0xFF;
         uint8_t g = (color32 >> 8) & 0xFF;
         uint8_t b = color32 & 0xFF;
@@ -148,5 +167,9 @@ bool isInside(int x, int y) {
 }
 
 bool isColliding(int ax, int ay, int bx, int by) {
-  return (ax == bx && ay == by);
+  int margin = 4;
+  return (
+    abs(ax - bx) < size - margin &&
+    abs(ay - by) < size - margin
+  );
 }
