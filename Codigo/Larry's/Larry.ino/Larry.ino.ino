@@ -30,6 +30,7 @@ int metasEncontradas = 0;
 bool victory = false;
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 150;
+bool pantallaInicioMostrada = false;
 
 // Sprites de Larry y Caja
 static const uint32_t larry_data[1][100] = {{
@@ -57,7 +58,8 @@ static const uint32_t boxSprite[1][100] = {{
   0xff8b4513, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff8b4513,
   0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513
 }};
-// Niveles
+
+// NIVELES COMPLETOS
 const char nivel1[13][16] = {
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
@@ -90,6 +92,7 @@ const char nivel2[13][16] = {
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'}
 };
 
+// [... CONTINÚA EN BLOQUE 2 ...]
 const char nivel3[13][16] = {
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
@@ -137,15 +140,31 @@ const char nivel5[13][16] = {
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
   {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'}
 };
-
-
-// Array de niveles
 const char (*niveles[])[16] = {nivel1, nivel2, nivel3, nivel4, nivel5};
 const int TOTAL_NIVELES = sizeof(niveles) / sizeof(niveles[0]);
 int nivelActual = 0;
 const char (*nivel)[16] = niveles[nivelActual];
+void pantallaInicio() {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 40);
+  tft.println("Larry's Adventures");
+  tft.setTextSize(1);
+  tft.setCursor(20, 80);
+  tft.println("Presiona START");
+}
 
-// Funciones
+void pantallaNivel(int numeroNivel) {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(40, 40);
+  tft.print("Nivel ");
+  tft.println(numeroNivel);
+  delay(1500);
+}
+
 void drawLarry(int x, int y) {
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
@@ -211,17 +230,6 @@ void drawScene() {
   }
   drawLarry(playerX, playerY);
 }
-
-void pantallaNivel(int numeroNivel) {
-  tft.fillScreen(ST77XX_BLACK);
-  tft.setTextColor(ST77XX_WHITE);
-  tft.setTextSize(2);
-  tft.setCursor(30, 40);
-  tft.print("Nivel ");
-  tft.println(numeroNivel);
-  delay(1500);
-}
-
 void setupNivel() {
   cajasEncontradas = 0;
   metasEncontradas = 0;
@@ -263,13 +271,33 @@ void setup() {
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
   pinMode(BTN_START, INPUT_PULLUP);
+  pinMode(BTN_BACK, INPUT_PULLUP);
 
-  pantallaNivel(nivelActual + 1);
-  setupNivel();
+  pantallaInicio();
 }
 
 void loop() {
-  if (victory) return;
+  if (!pantallaInicioMostrada) {
+    if (digitalRead(BTN_START) == LOW) {
+      pantallaInicioMostrada = true;
+      nivelActual = 0;
+      nivel = niveles[nivelActual];
+      pantallaNivel(nivelActual + 1);
+      setupNivel();
+      delay(500);
+    }
+    return;
+  }
+
+  if (victory) {
+    if (digitalRead(BTN_BACK) == LOW) {
+      pantallaInicioMostrada = false;
+      victory = false;
+      pantallaInicio();
+      delay(300);
+    }
+    return;
+  }
 
   int dx = 0, dy = 0;
   unsigned long currentTime = millis();
@@ -280,8 +308,7 @@ void loop() {
     else if (digitalRead(BTN_LEFT) == LOW) { dx = -step; lastDebounceTime = currentTime; }
     else if (digitalRead(BTN_RIGHT) == LOW) { dx = step; lastDebounceTime = currentTime; }
     else if (digitalRead(BTN_START) == LOW) {
-      victory = false;
-      setupNivel();
+      setupNivel(); 
       lastDebounceTime = currentTime;
       return;
     }
@@ -318,7 +345,7 @@ void loop() {
           empuja = true;
           break;
         } else {
-          return; // No puede empujar
+          return;
         }
       }
     }
@@ -355,7 +382,6 @@ void loop() {
       nivelActual++;
       if (nivelActual < TOTAL_NIVELES) {
         nivel = niveles[nivelActual];
-        victory = false;
         pantallaNivel(nivelActual + 1);
         setupNivel();
       } else {
