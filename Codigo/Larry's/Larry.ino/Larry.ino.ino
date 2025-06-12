@@ -19,19 +19,19 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 #define BTN_RIGHT  5
 #define BTN_START  7
 
-// ---------- Sprite de caracol (10x10) ----------
-const uint16_t snailSprite[10][10] = {
-  {0,0,0,ST77XX_YELLOW,ST77XX_YELLOW,0,0,0,0,0},
-  {0,0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0,0},
-  {0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0},
-  {ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_BLACK,ST77XX_BLACK,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0},
-  {ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_BLACK,ST77XX_BLACK,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0},
-  {0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0},
-  {0,0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0,0},
-  {0,0,0,ST77XX_YELLOW,ST77XX_YELLOW,0,0,0,0,0},
-  {0,0,0,ST77XX_WHITE,0,ST77XX_WHITE,0,0,0,0},
-  {0,0,0,ST77XX_WHITE,0,ST77XX_WHITE,0,0,0,0}
-};
+// ---------- Sprite Larry (10x10 ARGB32) ----------
+static const uint32_t larry_data[1][100] = {{
+  0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff000000, 
+  0xff000000, 0xff00ffff, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff00ffff, 0xff000000, 
+  0xff000000, 0xffffffff, 0xff00ffff, 0xff00ffff, 0xff000000, 0xff000000, 0xffffffff, 0xff00ffff, 0xff00ffff, 0xff000000, 
+  0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 
+  0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff00ffff, 0xff000000, 0xff000000, 
+  0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
+  0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
+  0xff000000, 0xff00ffff, 0xff00ffff, 0xff000000, 0xff000000, 0xff000000, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
+  0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 
+  0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff
+}};
 
 // ---------- Posiciones iniciales ----------
 const int START_PLAYER_X = 30;
@@ -48,6 +48,7 @@ int boxY = START_BOX_Y;
 const int size = 10;
 const int step = 10;
 
+// ---------- Setup ----------
 void setup() {
   mySPI.begin(TFT_SCLK, -1, TFT_MOSI);
   tft.initR(INITR_BLACKTAB);
@@ -63,6 +64,7 @@ void setup() {
   drawScene();
 }
 
+// ---------- Loop ----------
 void loop() {
   bool moved = false;
   int dx = 0, dy = 0;
@@ -112,19 +114,22 @@ void loop() {
   }
 }
 
-// ---------- Dibujar escena ----------
+// ---------- Funciones auxiliares ----------
 void drawScene() {
-  drawSnail(playerX, playerY);
+  drawLarry(playerX, playerY);
   tft.fillRect(boxX, boxY, size, size, ST77XX_BLUE);
 }
 
-// ---------- Sprite caracol ----------
-void drawSnail(int x, int y) {
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-      uint16_t color = snailSprite[i][j];
-      if (color != 0) {
-        tft.drawPixel(x + j, y + i, color);
+void drawLarry(int x, int y) {
+  for (int row = 0; row < 10; row++) {
+    for (int col = 0; col < 10; col++) {
+      uint32_t color32 = larry_data[0][row * 10 + col];
+      if ((color32 & 0xFFFFFF) != 0x000000) {  // ignorar negro como transparente
+        uint8_t r = (color32 >> 16) & 0xFF;
+        uint8_t g = (color32 >> 8) & 0xFF;
+        uint8_t b = color32 & 0xFF;
+        uint16_t color16 = tft.color565(r, g, b);
+        tft.drawPixel(x + col, y + row, color16);
       }
     }
   }
