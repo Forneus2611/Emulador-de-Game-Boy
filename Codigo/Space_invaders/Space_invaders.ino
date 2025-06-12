@@ -28,11 +28,13 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 int playerWidth = 14;
 int playerHeight = 8;
 int playerX = SCREEN_WIDTH / 2 - playerWidth / 2;
-int playerY = SCREEN_HEIGHT - 40; // 🚀 Nave más arriba
+int playerY = SCREEN_HEIGHT - 40; // Nave más arriba
 
-// Disparo del jugador
-bool shotActive = false;
-int shotX, shotY;
+// Disparos múltiples
+#define MAX_SHOTS 5
+bool shotActive[MAX_SHOTS];
+int shotX[MAX_SHOTS];
+int shotY[MAX_SHOTS];
 
 // Enemigos
 const int numEnemies = 6;
@@ -60,6 +62,11 @@ void setup() {
 
   // Inicializar enemigos
   initEnemies();
+
+  // Inicializar disparos
+  for (int i = 0; i < MAX_SHOTS; i++) {
+    shotActive[i] = false;
+  }
 }
 
 void loop() {
@@ -81,7 +88,7 @@ void initEnemies() {
   int spacing = 18; // Espaciado horizontal
   for (int i = 0; i < numEnemies; i++) {
     enemyX[i] = 10 + i * spacing;
-    enemyY[i] = 30; // Un poco más abajo
+    enemyY[i] = 30;
     enemyAlive[i] = true;
   }
 }
@@ -91,10 +98,33 @@ void drawPlayer() {
   tft.fillRect(playerX, playerY, playerWidth, playerHeight, ST77XX_WHITE);
 }
 
-// Dibuja el disparo
+// Dibuja múltiples disparos
 void drawShot() {
-  if (shotActive) {
-    tft.fillRect(shotX, shotY, 3, 7, ST77XX_RED);
+  for (int i = 0; i < MAX_SHOTS; i++) {
+    if (shotActive[i]) {
+      tft.fillRect(shotX[i], shotY[i], 3, 7, ST77XX_RED);
+    }
+  }
+}
+
+// Mueve múltiples disparos
+void moveShot() {
+  for (int i = 0; i < MAX_SHOTS; i++) {
+    if (shotActive[i]) {
+      shotY[i] -= 5;
+      if (shotY[i] < 0) {
+        shotActive[i] = false;
+      }
+      // Detecta colisiones con enemigos
+      for (int j = 0; j < numEnemies; j++) {
+        if (enemyAlive[j] && 
+            shotX[i] >= enemyX[j] && shotX[i] <= enemyX[j] + enemyWidth &&
+            shotY[i] >= enemyY[j] && shotY[i] <= enemyY[j] + enemyHeight) {
+          enemyAlive[j] = false;
+          shotActive[i] = false;
+        }
+      }
+    }
   }
 }
 
@@ -107,31 +137,11 @@ void drawEnemies() {
   }
 }
 
-// Mueve el disparo hacia arriba
-void moveShot() {
-  if (shotActive) {
-    shotY -= 5;
-    if (shotY < 0) {
-      shotActive = false;
-    }
-    // Detecta colisiones con enemigos
-    for (int i = 0; i < numEnemies; i++) {
-      if (enemyAlive[i] && 
-          shotX >= enemyX[i] && shotX <= enemyX[i] + enemyWidth &&
-          shotY >= enemyY[i] && shotY <= enemyY[i] + enemyHeight) {
-        enemyAlive[i] = false;
-        shotActive = false;
-      }
-    }
-  }
-}
-
 // Mueve los enemigos de lado a lado
 void moveEnemies() {
   for (int i = 0; i < numEnemies; i++) {
     enemyX[i] += enemyDirection;
   }
-  // Cambiar dirección si tocan los bordes
   if (enemyX[0] < 0 || enemyX[numEnemies - 1] + enemyWidth > SCREEN_WIDTH) {
     enemyDirection = -enemyDirection;
     for (int i = 0; i < numEnemies; i++) {
@@ -148,9 +158,14 @@ void readButtons() {
   if (digitalRead(BTN_RIGHT) == LOW && playerX < (SCREEN_WIDTH - playerWidth)) {
     playerX += 4;
   }
-  if (digitalRead(BTN_START) == LOW && !shotActive) {
-    shotX = playerX + playerWidth / 2;
-    shotY = playerY;
-    shotActive = true;
+  if (digitalRead(BTN_START) == LOW) {
+    for (int i = 0; i < MAX_SHOTS; i++) {
+      if (!shotActive[i]) {
+        shotX[i] = playerX + playerWidth / 2;
+        shotY[i] = playerY;
+        shotActive[i] = true;
+        break;
+      }
+    }
   }
 }
