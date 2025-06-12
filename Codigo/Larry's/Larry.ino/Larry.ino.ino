@@ -17,17 +17,36 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 #define BTN_DOWN   3
 #define BTN_LEFT   4
 #define BTN_RIGHT  5
+#define BTN_START  7
 
-// ---------- Cuadrado jugador ----------
-int playerX = 30;
-int playerY = 30;
+// ---------- Sprite de caracol (10x10) ----------
+const uint16_t snailSprite[10][10] = {
+  {0,0,0,ST77XX_YELLOW,ST77XX_YELLOW,0,0,0,0,0},
+  {0,0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0,0},
+  {0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0},
+  {ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_BLACK,ST77XX_BLACK,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0},
+  {ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_BLACK,ST77XX_BLACK,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0},
+  {0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_WHITE,ST77XX_WHITE,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0},
+  {0,0,ST77XX_YELLOW,ST77XX_MAGENTA,ST77XX_MAGENTA,ST77XX_YELLOW,0,0,0,0},
+  {0,0,0,ST77XX_YELLOW,ST77XX_YELLOW,0,0,0,0,0},
+  {0,0,0,ST77XX_WHITE,0,ST77XX_WHITE,0,0,0,0},
+  {0,0,0,ST77XX_WHITE,0,ST77XX_WHITE,0,0,0,0}
+};
 
-// ---------- Cuadrado azul (empujable) ----------
-int boxX = 60;
-int boxY = 30;
+// ---------- Posiciones iniciales ----------
+const int START_PLAYER_X = 30;
+const int START_PLAYER_Y = 30;
+const int START_BOX_X = 60;
+const int START_BOX_Y = 30;
+
+// ---------- Variables de posición ----------
+int playerX = START_PLAYER_X;
+int playerY = START_PLAYER_Y;
+int boxX = START_BOX_X;
+int boxY = START_BOX_Y;
 
 const int size = 10;
-const int step = 5;
+const int step = 10;
 
 void setup() {
   mySPI.begin(TFT_SCLK, -1, TFT_MOSI);
@@ -35,13 +54,13 @@ void setup() {
   tft.setRotation(1);
   tft.fillScreen(ST77XX_BLACK);
 
-  // Botones con pull-up
   pinMode(BTN_UP, INPUT_PULLUP);
   pinMode(BTN_DOWN, INPUT_PULLUP);
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
+  pinMode(BTN_START, INPUT_PULLUP);
 
-  drawSquares();
+  drawScene();
 }
 
 void loop() {
@@ -53,15 +72,23 @@ void loop() {
   if (digitalRead(BTN_LEFT) == LOW)  { dx = -step; moved = true; }
   if (digitalRead(BTN_RIGHT) == LOW) { dx = step;  moved = true; }
 
+  if (digitalRead(BTN_START) == LOW) {
+    clearSprite(playerX, playerY);
+    clearSquare(boxX, boxY);
+    playerX = START_PLAYER_X;
+    playerY = START_PLAYER_Y;
+    boxX = START_BOX_X;
+    boxY = START_BOX_Y;
+    drawScene();
+    delay(300);
+    return;
+  }
+
   if (moved) {
     int newPlayerX = playerX + dx;
     int newPlayerY = playerY + dy;
 
-    // Colisión con la caja azul
-    bool collide = (newPlayerX == boxX && newPlayerY == boxY);
-
-    // Intentar empujar
-    if (collide) {
+    if (isColliding(newPlayerX, newPlayerY, boxX, boxY)) {
       int newBoxX = boxX + dx;
       int newBoxY = boxY + dy;
 
@@ -69,25 +96,42 @@ void loop() {
         clearSquare(boxX, boxY);
         boxX = newBoxX;
         boxY = newBoxY;
-      } else {
-        return; // no puede empujar
-      }
-    }
 
-    if (isInside(newPlayerX, newPlayerY)) {
-      clearSquare(playerX, playerY);
+        clearSprite(playerX, playerY);
+        playerX = newPlayerX;
+        playerY = newPlayerY;
+      }
+    } else if (isInside(newPlayerX, newPlayerY)) {
+      clearSprite(playerX, playerY);
       playerX = newPlayerX;
       playerY = newPlayerY;
     }
 
-    drawSquares();
+    drawScene();
     delay(100);
   }
 }
 
-void drawSquares() {
-  tft.fillRect(playerX, playerY, size, size, ST77XX_WHITE);
+// ---------- Dibujar escena ----------
+void drawScene() {
+  drawSnail(playerX, playerY);
   tft.fillRect(boxX, boxY, size, size, ST77XX_BLUE);
+}
+
+// ---------- Sprite caracol ----------
+void drawSnail(int x, int y) {
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 10; j++) {
+      uint16_t color = snailSprite[i][j];
+      if (color != 0) {
+        tft.drawPixel(x + j, y + i, color);
+      }
+    }
+  }
+}
+
+void clearSprite(int x, int y) {
+  tft.fillRect(x, y, size, size, ST77XX_BLACK);
 }
 
 void clearSquare(int x, int y) {
@@ -96,4 +140,8 @@ void clearSquare(int x, int y) {
 
 bool isInside(int x, int y) {
   return (x >= 0 && x <= tft.width() - size && y >= 0 && y <= tft.height() - size);
+}
+
+bool isColliding(int ax, int ay, int bx, int by) {
+  return (ax == bx && ay == by);
 }
