@@ -17,70 +17,76 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 #define BTN_RIGHT  5
 #define BTN_START  7
 
-// Larry sprite
-static const uint32_t larry_data[1][100] = {{
-  0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xff000000,
-  0xff000000, 0xffffff00, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xffffff00, 0xff000000,
-  0xff000000, 0xffffffff, 0xffffff00, 0xffffff00, 0xff000000, 0xff000000, 0xffffffff, 0xffffff00, 0xffffff00, 0xff000000,
-  0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000,
-  0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xffffff00, 0xff000000, 0xff000000,
-  0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00,
-  0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00,
-  0xff000000, 0xffffff00, 0xffffff00, 0xff000000, 0xff000000, 0xff000000, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00,
-  0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00,
-  0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00, 0xffffff00
-}};
-
-// Box sprite
-static const uint32_t boxSprite[1][100] = {{
-  0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513,
-  0xff8b4513, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff8b4513,
-  0xff8b4513, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xff8b4513,
-  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff8b4513,
-  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff8b4513,
-  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff8b4513,
-  0xff8b4513, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xff8b4513,
-  0xff8b4513, 0xffa0522d, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xffa0522d, 0xff8b4513,
-  0xff8b4513, 0xff000000, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xffa0522d, 0xff000000, 0xff8b4513,
-  0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513, 0xff8b4513
-}};
-
 const int size = 10;
-const int step = 5;
-const int WALL = 10;
-const int wallColumnX = 15;
+const int step = 10;
 
-const int START_PLAYER_X = 30;
-const int START_PLAYER_Y = 30;
+const char nivel[13][16] = {
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','2','2','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','L','2','M','C','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','2','2','2','C','2','1','1','1','1','1','1'},
+  {'1','1','1','1','1','2','1','M','2','2','1','1','1','1','1','1'},
+  {'1','1','1','1','1','2','2','2','2','2','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'},
+  {'1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'}
+};
 
-const int START_BOX_X = 60;
-const int START_BOX_Y = 30;
-
-const int START_BOX2_X = 60;
-const int START_BOX2_Y = 60;
-
-const int GOAL_X = 100;
-const int GOAL_Y = 30;
-
-const int GOAL2_X = 100;
-const int GOAL2_Y = 60;
-
-int playerX = START_PLAYER_X, playerY = START_PLAYER_Y;
-int boxX = START_BOX_X, boxY = START_BOX_Y;
-int box2X = START_BOX2_X, box2Y = START_BOX2_Y;
-
+int playerX, playerY;
+int box1X, box1Y;
+int box2X, box2Y;
+int goal1X, goal1Y;
+int goal2X, goal2Y;
 bool victory = false;
+
+void cargarEntidades() {
+  int cajasEncontradas = 0;
+  int metasEncontradas = 0;
+  for (int y = 0; y < 13; y++) {
+    for (int x = 0; x < 16; x++) {
+      char ch = nivel[y][x];
+      if (ch == 'L') { playerX = x * size; playerY = y * size; }
+      if (ch == 'C') {
+        if (cajasEncontradas == 0) { box1X = x * size; box1Y = y * size; cajasEncontradas++; }
+        else { box2X = x * size; box2Y = y * size; }
+      }
+      if (ch == 'M') {
+        if (metasEncontradas == 0) { goal1X = x * size; goal1Y = y * size; metasEncontradas++; }
+        else { goal2X = x * size; goal2Y = y * size; }
+      }
+    }
+  }
+}
 
 void setup() {
   mySPI.begin(TFT_SCLK, -1, TFT_MOSI);
   tft.initR(INITR_BLACKTAB);
   tft.setRotation(1);
-  tft.fillScreen(ST77XX_BLACK);
+
   pinMode(BTN_UP, INPUT_PULLUP);
   pinMode(BTN_DOWN, INPUT_PULLUP);
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
   pinMode(BTN_START, INPUT_PULLUP);
+
+  tft.fillScreen(ST77XX_BLACK);
+  cargarEntidades();
+
+  for (int y = 0; y < 13; y++) {
+    for (int x = 0; x < 16; x++) {
+      int px = x * size;
+      int py = y * size;
+      char ch = nivel[y][x];
+      if (ch == '1') tft.fillRect(px, py, size, size, ST77XX_WHITE);
+      else if (ch == 'M') tft.fillRect(px, py, size, size, ST77XX_GREEN);
+      else if (ch == '2') tft.fillRect(px, py, size, size, ST77XX_BLACK);
+    }
+  }
+
   drawScene();
 }
 
@@ -93,18 +99,8 @@ void loop() {
   if (digitalRead(BTN_RIGHT) == LOW) dx = step;
 
   if (digitalRead(BTN_START) == LOW) {
-    clearSprite(playerX, playerY);
-    clearSprite(boxX, boxY);
-    clearSprite(box2X, box2Y);
-    tft.fillScreen(ST77XX_BLACK);
-    playerX = START_PLAYER_X;
-    playerY = START_PLAYER_Y;
-    boxX = START_BOX_X;
-    boxY = START_BOX_Y;
-    box2X = START_BOX2_X;
-    box2Y = START_BOX2_Y;
     victory = false;
-    drawScene();
+    setup();
     delay(300);
     return;
   }
@@ -115,16 +111,16 @@ void loop() {
 
     if (!isInside(newPlayerX, newPlayerY) || isWall(newPlayerX, newPlayerY)) return;
 
-    bool empujaCaja1 = isColliding(newPlayerX, newPlayerY, boxX, boxY);
+    bool empujaCaja1 = isColliding(newPlayerX, newPlayerY, box1X, box1Y);
     bool empujaCaja2 = isColliding(newPlayerX, newPlayerY, box2X, box2Y);
 
     if (empujaCaja1 || empujaCaja2) {
-      int& bX = empujaCaja1 ? boxX : box2X;
-      int& bY = empujaCaja1 ? boxY : box2Y;
+      int& bX = empujaCaja1 ? box1X : box2X;
+      int& bY = empujaCaja1 ? box1Y : box2Y;
       int newBoxX = bX + dx;
       int newBoxY = bY + dy;
       if (isInside(newBoxX, newBoxY) && !isWall(newBoxX, newBoxY) &&
-          !isColliding(newBoxX, newBoxY, empujaCaja1 ? box2X : boxX, empujaCaja1 ? box2Y : boxY)) {
+          !isColliding(newBoxX, newBoxY, empujaCaja1 ? box2X : box1X, empujaCaja1 ? box2Y : box1Y)) {
         clearSprite(bX, bY);
         bX = newBoxX;
         bY = newBoxY;
@@ -140,8 +136,8 @@ void loop() {
       drawScene();
     }
 
-    if (((boxX == GOAL_X && boxY == GOAL_Y) && (box2X == GOAL2_X && box2Y == GOAL2_Y)) ||
-        ((boxX == GOAL2_X && boxY == GOAL2_Y) && (box2X == GOAL_X && box2Y == GOAL_Y))) {
+    if (((box1X == goal1X && box1Y == goal1Y) && (box2X == goal2X && box2Y == goal2Y)) ||
+        ((box1X == goal2X && box1Y == goal2Y) && (box2X == goal1X && box2Y == goal1Y))) {
       tft.setTextColor(ST77XX_WHITE);
       tft.setTextSize(2);
       tft.setCursor(20, 80);
@@ -154,53 +150,35 @@ void loop() {
 }
 
 void drawScene() {
-  tft.fillRect(GOAL_X, GOAL_Y, size, size, ST77XX_GREEN);
-  tft.fillRect(GOAL2_X, GOAL2_Y, size, size, ST77XX_GREEN);
+  bool cajaEnMeta1 = (box1X == goal1X && box1Y == goal1Y) || (box2X == goal1X && box2Y == goal1Y);
+  bool cajaEnMeta2 = (box1X == goal2X && box1Y == goal2Y) || (box2X == goal2X && box2Y == goal2Y);
+  tft.fillRect(goal1X, goal1Y, size, size, cajaEnMeta1 ? ST77XX_BLUE : ST77XX_GREEN);
+  tft.fillRect(goal2X, goal2Y, size, size, cajaEnMeta2 ? ST77XX_BLUE : ST77XX_GREEN);
 
-  tft.fillRect(0, 0, tft.width(), WALL, ST77XX_WHITE);
-  tft.fillRect(0, tft.height() - WALL, tft.width(), WALL, ST77XX_WHITE);
-  tft.fillRect(0, 0, WALL, tft.height(), ST77XX_WHITE);
-  tft.fillRect(tft.width() - WALL, 0, WALL, tft.height(), ST77XX_WHITE);
-
-  for (int y = WALL; y < tft.height() - WALL; y += size) {
-    tft.fillRect(wallColumnX, y, size, size, ST77XX_WHITE);
-  }
-
-  drawLarry(playerX, playerY);
-  drawBox(boxX, boxY);
+  drawBox(box1X, box1Y);
   drawBox(box2X, box2Y);
+  drawLarry(playerX, playerY);
 }
 
 void drawLarry(int x, int y) {
-  for (int r = 0; r < 10; r++) {
-    for (int c = 0; c < 10; c++) {
-      uint32_t color32 = larry_data[0][r * 10 + c];
-      if ((color32 & 0xFFFFFF) != 0x000000) {
-        uint16_t color16 = tft.color565((color32 >> 16) & 0xFF, (color32 >> 8) & 0xFF, color32 & 0xFF);
-        tft.drawPixel(x + c, y + r, color16);
-      }
-    }
-  }
+  tft.fillRect(x, y, size, size, ST77XX_RED);
 }
 
 void drawBox(int x, int y) {
-  for (int r = 0; r < 10; r++) {
-    for (int c = 0; c < 10; c++) {
-      uint32_t color32 = boxSprite[0][r * 10 + c];
-      if ((color32 & 0xFFFFFF) != 0x000000) {
-        uint16_t color16 = tft.color565((color32 >> 16) & 0xFF, (color32 >> 8) & 0xFF, color32 & 0xFF);
-        tft.drawPixel(x + c, y + r, color16);
-      }
-    }
-  }
+  tft.fillRect(x, y, size, size, ST77XX_YELLOW);
 }
 
 void clearSprite(int x, int y) {
-  tft.fillRect(x, y, size, size, ST77XX_BLACK);
+  int cx = x / size;
+  int cy = y / size;
+  char ch = nivel[cy][cx];
+  if (ch == '1') tft.fillRect(x, y, size, size, ST77XX_WHITE);
+  else if (ch == 'M') tft.fillRect(x, y, size, size, ST77XX_GREEN);
+  else tft.fillRect(x, y, size, size, ST77XX_BLACK);
 }
 
 bool isInside(int x, int y) {
-  return x >= WALL && x <= tft.width() - WALL - size && y >= WALL && y <= tft.height() - WALL - size;
+  return x >= 0 && x <= tft.width() - size && y >= 0 && y <= tft.height() - size;
 }
 
 bool isColliding(int ax, int ay, int bx, int by) {
@@ -209,5 +187,7 @@ bool isColliding(int ax, int ay, int bx, int by) {
 }
 
 bool isWall(int x, int y) {
-  return x >= wallColumnX && x < wallColumnX + size;
+  int cx = x / size;
+  int cy = y / size;
+  return nivel[cy][cx] == '1';
 }
