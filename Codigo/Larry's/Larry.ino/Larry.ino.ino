@@ -41,6 +41,8 @@ const int START_BOX_Y = 30;
 const int GOAL_X = 100;
 const int GOAL_Y = 30;
 
+const int WALL_THICKNESS = 10;
+
 // ---------- Variables de posición ----------
 int playerX = START_PLAYER_X;
 int playerY = START_PLAYER_Y;
@@ -131,10 +133,16 @@ void loop() {
 
 // ---------- Funciones auxiliares ----------
 void drawScene() {
-  // Dibuja la meta primero
+  // Zona meta
   tft.fillRect(GOAL_X, GOAL_Y, size, size, ST77XX_GREEN);
 
-  // Dibuja jugador y caja
+  // Paredes blancas alrededor
+  tft.fillRect(0, 0, tft.width(), WALL_THICKNESS, ST77XX_WHITE); // superior
+  tft.fillRect(0, tft.height() - WALL_THICKNESS, tft.width(), WALL_THICKNESS, ST77XX_WHITE); // inferior
+  tft.fillRect(0, 0, WALL_THICKNESS, tft.height(), ST77XX_WHITE); // izquierda
+  tft.fillRect(tft.width() - WALL_THICKNESS, 0, WALL_THICKNESS, tft.height(), ST77XX_WHITE); // derecha
+
+  // Personaje y caja
   drawLarry(playerX, playerY);
   tft.fillRect(boxX, boxY, size, size, ST77XX_BLUE);
 }
@@ -163,7 +171,12 @@ void clearSquare(int x, int y) {
 }
 
 bool isInside(int x, int y) {
-  return (x >= 0 && x <= tft.width() - size && y >= 0 && y <= tft.height() - size);
+  return (
+    x >= WALL_THICKNESS &&
+    x <= tft.width() - WALL_THICKNESS - size &&
+    y >= WALL_THICKNESS &&
+    y <= tft.height() - WALL_THICKNESS - size
+  );
 }
 
 bool isColliding(int ax, int ay, int bx, int by) {
