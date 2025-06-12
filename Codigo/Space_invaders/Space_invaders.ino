@@ -28,7 +28,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 int playerWidth = 14;
 int playerHeight = 8;
 int playerX = SCREEN_WIDTH / 2 - playerWidth / 2;
-int playerY = SCREEN_HEIGHT - 40; // Nave más arriba
+int playerY = SCREEN_HEIGHT - 40;
 
 // Disparos múltiples
 #define MAX_SHOTS 5
@@ -43,16 +43,25 @@ int enemyHeight = 8;
 int enemyX[numEnemies];
 int enemyY[numEnemies];
 bool enemyAlive[numEnemies];
-int enemyDirection = 1; // 1 = derecha, -1 = izquierda
-
-// Velocidad de enemigos
+int enemyDirection = 1;
 int enemySpeed = 1;
 
-// Game Over flag
+// Puntuación
+int score = 0;
+int highScore = 0;
+
+// Estados de juego
+enum GameState {
+  MENU,
+  PLAYING,
+  GAMEOVER
+};
+
+GameState gameState = MENU;
+
 bool gameOver = false;
 
 void setup() {
-  // Inicializar botones
   pinMode(BTN_UP, INPUT_PULLUP);
   pinMode(BTN_DOWN, INPUT_PULLUP);
   pinMode(BTN_LEFT, INPUT_PULLUP);
@@ -60,51 +69,74 @@ void setup() {
   pinMode(BTN_START, INPUT_PULLUP);
   pinMode(BTN_BACK, INPUT_PULLUP);
 
-  // Inicializar pantalla
   mySPI.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
   tft.initR(INITR_BLACKTAB);
-  tft.setRotation(1); // Horizontal
+  tft.setRotation(1);
   tft.fillScreen(ST77XX_BLACK);
 
-  // Inicializar enemigos
   initEnemies();
-
-  // Inicializar disparos
   for (int i = 0; i < MAX_SHOTS; i++) {
     shotActive[i] = false;
   }
 }
 
 void loop() {
-  if (gameOver) { 
+  if (gameState == MENU) {
+    showMenu();
+  }
+  else if (gameState == PLAYING) {
     tft.fillScreen(ST77XX_BLACK);
-    tft.setCursor(20, SCREEN_HEIGHT / 2);
-    tft.setTextColor(ST77XX_RED);
-    tft.setTextSize(2);
-    tft.println("GAME OVER");
-    while (true); // Detener el juego
+
+    readButtons();
+    moveShot();
+    moveEnemies();
+
+    drawPlayer();
+    drawShot();
+    drawEnemies();
+    drawScore();
+
+    if (allEnemiesDead()) {
+      nextWave();
+    }
+
+    if (gameOver) {
+      gameState = GAMEOVER;
+    }
+
+    delay(50);
   }
-
-  tft.fillScreen(ST77XX_BLACK);
-
-  readButtons();
-  moveShot();
-  moveEnemies();
-
-  drawPlayer();
-  drawShot();
-  drawEnemies();
-
-  if (allEnemiesDead()) {
-    nextWave();
+  else if (gameState == GAMEOVER) {
+    showGameOver();
   }
-
-  delay(50);
 }
 
-// Inicializa la posición de los enemigos
+void showMenu() {
+  tft.fillScreen(ST77XX_BLACK);
+
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(2);
+  tft.setCursor(10, 40);
+  tft.println("SPACE");
+
+  tft.setCursor(10, 70);
+  tft.println("INVADERS");
+
+  tft.setTextSize(1);
+  tft.setCursor(20, 120);
+  tft.println("Press Start");
+
+  while (true) {
+    if (digitalRead(BTN_START) == LOW) {
+      restartGame();
+      gameState = PLAYING;
+      break;
+    }
+  }
+}
+
 void initEnemies() {
-  int spacing = 18; // Espaciado horizontal
+  int spacing = 18;
   for (int i = 0; i < numEnemies; i++) {
     enemyX[i] = 10 + i * spacing;
     enemyY[i] = 30;
@@ -112,12 +144,10 @@ void initEnemies() {
   }
 }
 
-// Dibuja la nave del jugador
 void drawPlayer() {
   tft.fillRect(playerX, playerY, playerWidth, playerHeight, ST77XX_WHITE);
 }
 
-// Dibuja múltiples disparos
 void drawShot() {
   for (int i = 0; i < MAX_SHOTS; i++) {
     if (shotActive[i]) {
@@ -126,7 +156,6 @@ void drawShot() {
   }
 }
 
-// Mueve múltiples disparos
 void moveShot() {
   for (int i = 0; i < MAX_SHOTS; i++) {
     if (shotActive[i]) {
@@ -134,20 +163,19 @@ void moveShot() {
       if (shotY[i] < 0) {
         shotActive[i] = false;
       }
-      // Detecta colisiones con enemigos
       for (int j = 0; j < numEnemies; j++) {
-        if (enemyAlive[j] && 
+        if (enemyAlive[j] &&
             shotX[i] >= enemyX[j] && shotX[i] <= enemyX[j] + enemyWidth &&
             shotY[i] >= enemyY[j] && shotY[i] <= enemyY[j] + enemyHeight) {
           enemyAlive[j] = false;
           shotActive[i] = false;
+          score++;
         }
       }
     }
   }
 }
 
-// Dibuja los enemigos
 void drawEnemies() {
   for (int i = 0; i < numEnemies; i++) {
     if (enemyAlive[i]) {
@@ -156,7 +184,6 @@ void drawEnemies() {
   }
 }
 
-// Mueve los enemigos de lado a lado
 void moveEnemies() {
   for (int i = 0; i < numEnemies; i++) {
     enemyX[i] += enemyDirection * enemySpeed;
@@ -172,7 +199,6 @@ void moveEnemies() {
   }
 }
 
-// Lee los botones para mover la nave o disparar
 void readButtons() {
   if (digitalRead(BTN_LEFT) == LOW && playerX > 0) {
     playerX -= 4;
@@ -192,7 +218,6 @@ void readButtons() {
   }
 }
 
-// Verifica si todos los enemigos están muertos
 bool allEnemiesDead() {
   for (int i = 0; i < numEnemies; i++) {
     if (enemyAlive[i]) {
@@ -202,8 +227,66 @@ bool allEnemiesDead() {
   return true;
 }
 
-// Siguiente ola
 void nextWave() {
   enemySpeed += 1;
   initEnemies();
+}
+
+void drawScore() {
+  tft.setCursor(2, 2);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(1);
+  tft.print("Score: ");
+  tft.print(score);
+  tft.setCursor(80, 2);
+  tft.print("High: ");
+  tft.print(highScore);
+}
+
+void showGameOver() {
+  if (score > highScore) {
+    highScore = score;
+  }
+
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_RED);
+  tft.setTextSize(2);
+  tft.setCursor(20, 40);
+  tft.println("GAME OVER");
+
+  tft.setTextSize(1);
+  tft.setCursor(20, 80);
+  tft.print("Score: ");
+  tft.println(score);
+
+  tft.setCursor(20, 100);
+  tft.print("High Score: ");
+  tft.println(highScore);
+
+  tft.setCursor(20, 130);
+  tft.println("Start=Retry");
+  tft.setCursor(20, 140);
+  tft.println("Back=Menu");
+
+  while (true) {
+    if (digitalRead(BTN_START) == LOW) {
+      restartGame();
+      gameState = PLAYING;
+      break;
+    }
+    if (digitalRead(BTN_BACK) == LOW) {
+      gameState = MENU;
+      break;
+    }
+  }
+}
+
+void restartGame() {
+  score = 0;
+  enemySpeed = 1;
+  initEnemies();
+  for (int i = 0; i < MAX_SHOTS; i++) {
+    shotActive[i] = false;
+  }
+  gameOver = false;
 }
