@@ -45,6 +45,12 @@ int enemyY[numEnemies];
 bool enemyAlive[numEnemies];
 int enemyDirection = 1; // 1 = derecha, -1 = izquierda
 
+// Velocidad de enemigos
+int enemySpeed = 1;
+
+// Game Over flag
+bool gameOver = false;
+
 void setup() {
   // Inicializar botones
   pinMode(BTN_UP, INPUT_PULLUP);
@@ -70,6 +76,15 @@ void setup() {
 }
 
 void loop() {
+  if (gameOver) {
+    tft.fillScreen(ST77XX_BLACK);
+    tft.setCursor(20, SCREEN_HEIGHT / 2);
+    tft.setTextColor(ST77XX_RED);
+    tft.setTextSize(2);
+    tft.println("GAME OVER");
+    while (true); // Detener el juego
+  }
+
   tft.fillScreen(ST77XX_BLACK);
 
   readButtons();
@@ -80,7 +95,11 @@ void loop() {
   drawShot();
   drawEnemies();
 
-  delay(50); // Pequeño delay para estabilidad
+  if (allEnemiesDead()) {
+    nextWave();
+  }
+
+  delay(50);
 }
 
 // Inicializa la posición de los enemigos
@@ -140,12 +159,15 @@ void drawEnemies() {
 // Mueve los enemigos de lado a lado
 void moveEnemies() {
   for (int i = 0; i < numEnemies; i++) {
-    enemyX[i] += enemyDirection;
+    enemyX[i] += enemyDirection * enemySpeed;
   }
   if (enemyX[0] < 0 || enemyX[numEnemies - 1] + enemyWidth > SCREEN_WIDTH) {
     enemyDirection = -enemyDirection;
     for (int i = 0; i < numEnemies; i++) {
       enemyY[i] += 10;
+      if (enemyY[i] + enemyHeight >= playerY) {
+        gameOver = true;
+      }
     }
   }
 }
@@ -168,4 +190,20 @@ void readButtons() {
       }
     }
   }
+}
+
+// Verifica si todos los enemigos están muertos
+bool allEnemiesDead() {
+  for (int i = 0; i < numEnemies; i++) {
+    if (enemyAlive[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Siguiente ola
+void nextWave() {
+  enemySpeed += 1;
+  initEnemies();
 }
