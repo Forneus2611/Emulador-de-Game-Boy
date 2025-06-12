@@ -31,6 +31,7 @@ const int maxSequence = 100;
 int sequence[maxSequence];
 int currentLevel = 1;
 bool playing = false;
+bool gameOverFlag = false;
 
 void setup() {
   // Inicializar pantalla
@@ -47,29 +48,28 @@ void setup() {
   pinMode(BTN_START, INPUT_PULLUP);
   pinMode(BTN_BACK, INPUT_PULLUP);
 
-  // Mostrar pantalla de inicio
-  tft.setTextColor(ST77XX_WHITE);
-  tft.setTextSize(2);
-  tft.setCursor(20, 60);
-  tft.print("SIMON GAME");
-  tft.setTextSize(1);
-  tft.setCursor(30, 100);
-  tft.print("Press START");
+  showStartScreen();
 }
 
 void loop() {
-  if (!playing) {
+  if (!playing && !gameOverFlag) {
     if (digitalRead(BTN_START) == LOW) {
       delay(300); // Debounce
       startGame();
     }
-  } else {
+  } else if (playing) {
     showSequence();
     if (!playerTurn()) {
       gameOver();
     } else {
       currentLevel++;
       delay(500);
+    }
+  } else if (gameOverFlag) {
+    if (digitalRead(BTN_BACK) == LOW) {
+      delay(300); // Debounce
+      gameOverFlag = false;
+      showStartScreen();
     }
   }
 }
@@ -146,6 +146,8 @@ int waitForButton() {
 }
 
 void gameOver() {
+  playing = false;
+  gameOverFlag = true;
   tft.fillScreen(ST77XX_BLACK);
   tft.setTextColor(ST77XX_RED);
   tft.setTextSize(2);
@@ -156,8 +158,16 @@ void gameOver() {
   tft.print("Score: ");
   tft.print(currentLevel - 1);
   tft.setCursor(10, 120);
-  tft.print("Press START");
-
-  playing = false;
+  tft.print("Press BACK");
 }
 
+void showStartScreen() {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(20, 60);
+  tft.print("SIMON GAME");
+  tft.setTextSize(1);
+  tft.setCursor(30, 100);
+  tft.print("Press START");
+}
