@@ -19,12 +19,12 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 #define BTN_RIGHT  5
 
 // ---------- Cuadrado jugador ----------
-int x1 = 30;
-int y1 = 30;
+int playerX = 30;
+int playerY = 30;
 
 // ---------- Cuadrado azul (empujable) ----------
-int x2 = 60;
-int y2 = 30;
+int boxX = 60;
+int boxY = 30;
 
 const int size = 10;
 const int step = 5;
@@ -46,7 +46,6 @@ void setup() {
 
 void loop() {
   bool moved = false;
-
   int dx = 0, dy = 0;
 
   if (digitalRead(BTN_UP) == LOW)    { dy = -step; moved = true; }
@@ -55,32 +54,30 @@ void loop() {
   if (digitalRead(BTN_RIGHT) == LOW) { dx = step;  moved = true; }
 
   if (moved) {
-    int newX1 = x1 + dx;
-    int newY1 = y1 + dy;
+    int newPlayerX = playerX + dx;
+    int newPlayerY = playerY + dy;
 
-    // Verifica si colisiona con el cuadrado azul
-    bool collide = (newX1 == x2 && newY1 == y2);
+    // Colisión con la caja azul
+    bool collide = (newPlayerX == boxX && newPlayerY == boxY);
 
-    // Si colisiona, intenta empujar el cuadrado azul
+    // Intentar empujar
     if (collide) {
-      int newX2 = x2 + dx;
-      int newY2 = y2 + dy;
+      int newBoxX = boxX + dx;
+      int newBoxY = boxY + dy;
 
-      // Solo mueve el azul si no sale de los límites
-      if (isInside(newX2, newY2)) {
-        clearSquare(x2, y2);
-        x2 = newX2;
-        y2 = newY2;
+      if (isInside(newBoxX, newBoxY)) {
+        clearSquare(boxX, boxY);
+        boxX = newBoxX;
+        boxY = newBoxY;
       } else {
-        return; // no puede empujar, no se mueve
+        return; // no puede empujar
       }
     }
 
-    // Verifica si el jugador puede moverse
-    if (isInside(newX1, newY1)) {
-      clearSquare(x1, y1);
-      x1 = newX1;
-      y1 = newY1;
+    if (isInside(newPlayerX, newPlayerY)) {
+      clearSquare(playerX, playerY);
+      playerX = newPlayerX;
+      playerY = newPlayerY;
     }
 
     drawSquares();
@@ -89,10 +86,8 @@ void loop() {
 }
 
 void drawSquares() {
-  // jugador blanco
-  tft.fillRect(x1, y1, size, size, ST77XX_WHITE);
-  // empujable azul
-  tft.fillRect(x2, y2, size, size, ST77XX_BLUE);
+  tft.fillRect(playerX, playerY, size, size, ST77XX_WHITE);
+  tft.fillRect(boxX, boxY, size, size, ST77XX_BLUE);
 }
 
 void clearSquare(int x, int y) {
