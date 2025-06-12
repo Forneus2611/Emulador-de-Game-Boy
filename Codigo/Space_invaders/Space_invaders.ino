@@ -28,7 +28,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 int playerWidth = 14;
 int playerHeight = 8;
 int playerX = SCREEN_WIDTH / 2 - playerWidth / 2;
-int playerY = SCREEN_HEIGHT - 20;
+int playerY = SCREEN_HEIGHT - 40; // 🚀 Nave más arriba
 
 // Disparo del jugador
 bool shotActive = false;
@@ -151,6 +151,6 @@ void readButtons() {
   if (digitalRead(BTN_START) == LOW && !shotActive) {
     shotX = playerX + playerWidth / 2;
     shotY = playerY;
-    shotActive = true;
-  }
+    shotActive = true;
+  }
 }
