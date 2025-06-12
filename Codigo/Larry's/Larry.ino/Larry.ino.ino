@@ -18,11 +18,16 @@ Adafruit_ST7735 tft = Adafruit_ST7735(&mySPI, TFT_CS, TFT_DC, TFT_RST);
 #define BTN_LEFT   4
 #define BTN_RIGHT  5
 
-// ---------- Propiedades del "jugador" ----------
-int x = 60;          // posición inicial X
-int y = 60;          // posición inicial Y
-const int size = 10; // tamaño del cuadrado
-const int step = 5;  // cantidad de movimiento por pulsación
+// ---------- Cuadrado jugador ----------
+int x1 = 30;
+int y1 = 30;
+
+// ---------- Cuadrado azul (empujable) ----------
+int x2 = 60;
+int y2 = 30;
+
+const int size = 10;
+const int step = 5;
 
 void setup() {
   mySPI.begin(TFT_SCLK, -1, TFT_MOSI);
@@ -36,45 +41,64 @@ void setup() {
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
 
-  drawPlayer();
+  drawSquares();
 }
 
 void loop() {
   bool moved = false;
 
-  // Detectar botones y mover
-  if (digitalRead(BTN_UP) == LOW && y > 0) {
-    clearPlayer();
-    y -= step;
-    moved = true;
-  }
-  if (digitalRead(BTN_DOWN) == LOW && y < tft.height() - size) {
-    clearPlayer();
-    y += step;
-    moved = true;
-  }
-  if (digitalRead(BTN_LEFT) == LOW && x > 0) {
-    clearPlayer();
-    x -= step;
-    moved = true;
-  }
-  if (digitalRead(BTN_RIGHT) == LOW && x < tft.width() - size) {
-    clearPlayer();
-    x += step;
-    moved = true;
-  }
+  int dx = 0, dy = 0;
+
+  if (digitalRead(BTN_UP) == LOW)    { dy = -step; moved = true; }
+  if (digitalRead(BTN_DOWN) == LOW)  { dy = step;  moved = true; }
+  if (digitalRead(BTN_LEFT) == LOW)  { dx = -step; moved = true; }
+  if (digitalRead(BTN_RIGHT) == LOW) { dx = step;  moved = true; }
 
   if (moved) {
-    drawPlayer();
-    delay(100); // para evitar rebotes
+    int newX1 = x1 + dx;
+    int newY1 = y1 + dy;
+
+    // Verifica si colisiona con el cuadrado azul
+    bool collide = (newX1 == x2 && newY1 == y2);
+
+    // Si colisiona, intenta empujar el cuadrado azul
+    if (collide) {
+      int newX2 = x2 + dx;
+      int newY2 = y2 + dy;
+
+      // Solo mueve el azul si no sale de los límites
+      if (isInside(newX2, newY2)) {
+        clearSquare(x2, y2);
+        x2 = newX2;
+        y2 = newY2;
+      } else {
+        return; // no puede empujar, no se mueve
+      }
+    }
+
+    // Verifica si el jugador puede moverse
+    if (isInside(newX1, newY1)) {
+      clearSquare(x1, y1);
+      x1 = newX1;
+      y1 = newY1;
+    }
+
+    drawSquares();
+    delay(100);
   }
 }
 
-// ---------- Funciones de dibujo ----------
-void drawPlayer() {
-  tft.fillRect(x, y, size, size, ST77XX_WHITE);
+void drawSquares() {
+  // jugador blanco
+  tft.fillRect(x1, y1, size, size, ST77XX_WHITE);
+  // empujable azul
+  tft.fillRect(x2, y2, size, size, ST77XX_BLUE);
 }
 
-void clearPlayer() {
+void clearSquare(int x, int y) {
   tft.fillRect(x, y, size, size, ST77XX_BLACK);
+}
+
+bool isInside(int x, int y) {
+  return (x >= 0 && x <= tft.width() - size && y >= 0 && y <= tft.height() - size);
 }
